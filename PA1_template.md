@@ -1,8 +1,3 @@
----
-output:
-  html_document:
-    keep_md: yes
----
 #Reproducible Research: Course Project 1
 
 
@@ -18,66 +13,95 @@ This assignment makes use of data from a personal activity monitoring device. Th
 ###1. Loading and preprocessing the data
 
 Load the data:
-```{r loadingData, echo=TRUE}
+
+```r
 activity <- read.csv("activity.csv")
 ```
 
 Change data type for date column
-```{r dataType, echo=TRUE}
+
+```r
 activity$date <- as.Date(activity$date)
 ```
 
 ###2. What is mean total number of steps taken per day?
 
 The total numbre of steps taken per day is
-```{r totalSteps, echo=TRUE}
+
+```r
 totalSteps <- sum(activity$steps, na.rm = TRUE)
 totalSteps
 ```
 
+```
+## [1] 570608
+```
+
 
 The histogram of the total number of steps taken each day is:
-```{r histogramStepsDay, echo=TRUE}
+
+```r
 library(plyr)
 stepsDay <- aggregate(activity$steps, by = list(date = activity$date), FUN = sum)
 stepsDay <- rename(stepsDay, c("x" = "steps"))
 hist(stepsDay$steps, xlab = "Steps", main = "Histogram of the total number of steps taken each day")
 ```
 
+![](PA1_template_files/figure-html/histogramStepsDay-1.png)<!-- -->
+
 The mean of the total number of steps taken per day is:
-```{r meanTotalSteps, echo=TRUE}
+
+```r
 meanTotalSteps <- mean(stepsDay$steps, na.rm = TRUE)
 meanTotalSteps
 ```
 
+```
+## [1] 10766.19
+```
+
 And the median of the total number of steps taken per day is:
-```{r medianTotalSteps, echo=TRUE}
+
+```r
 medianTotalSteps <- median(stepsDay$steps, na.rm = TRUE)
 medianTotalSteps
+```
+
+```
+## [1] 10765
 ```
 
 
 ###3. What is the average daily activity pattern?
 
 Time series plot of the 5-minute interval and the average number of steps taken, averaged across all days:
-```{r timeSeries, echo=TRUE}
+
+```r
 library(plyr)
 meanStepsInterval <- aggregate(activity$steps, by = list(interval = activity$interval), FUN = mean, na.rm = TRUE)
 meanStepsInterval <- rename(meanStepsInterval, c("x" = "meanSteps"))
 plot(meanStepsInterval$interval, meanStepsInterval$meanSteps, type = "l", xlab = "5 minutes interval", ylab = "Mean steps", main = "Average number of steps taken by 5-minute intervals")
 ```
 
+![](PA1_template_files/figure-html/timeSeries-1.png)<!-- -->
+
 
 ###4. Imputing missing values
 
 The total number of missing values in the dataset is:
-```{r totalMissingvalues, echo=TRUE}
+
+```r
 totalMissingvalues <- sum(is.na(activity$steps))
 totalMissingvalues
 ```
 
+```
+## [1] 2304
+```
+
 This missing values are filling by the mean of the corresponding 5-minute interval
-```{r fillingMissingvalues, echo=TRUE}
+
+```r
 activityImputed <- activity
 naIndex <- is.na(activityImputed)
 naIntervals <- activityImputed[naIndex,]$interval
@@ -86,36 +110,51 @@ activityImputed[naIndex,]$steps <- naIntervalsMeans$meanSteps
 ```
 
 Now, the histogram of the total number of steps taken each day is:
-```{r histogramStepsDayImputed, echo=TRUE}
+
+```r
 library(plyr)
 stepsDayImputed <- aggregate(activityImputed$steps, by = list(date = activityImputed$date), FUN = sum)
 stepsDayImputed <- rename(stepsDayImputed, c("x" = "steps"))
 hist(stepsDayImputed$steps, xlab = "Steps", main = "Histogram of the total number of steps taken each day")
 ```
 
+![](PA1_template_files/figure-html/histogramStepsDayImputed-1.png)<!-- -->
+
 The mean of the total number of steps taken per day is now:
-```{r meanTotalStepsImputed, echo=TRUE}
+
+```r
 meanTotalStepsImputed <- mean(stepsDayImputed$steps)
 meanTotalStepsImputed
 ```
 
+```
+## [1] 10766.19
+```
+
 And the median of the total number of steps taken per day is:
-```{r medianTotalStepsImputed, echo=TRUE}
+
+```r
 medianTotalStepsImputed <- median(stepsDayImputed$steps)
 medianTotalStepsImputed
+```
+
+```
+## [1] 10766.19
 ```
 
 
 ###5. Are there differences in activity patterns between weekdays and weekends?
 
 New factor variable in the dataset that indicates if the date is "weekday" or "weekend":
-```{r weekday, echo=TRUE}
+
+```r
 isWeekend <- weekdays(activity$date, abbreviate = TRUE) == "Sat" | weekdays(activity$date, abbreviate = TRUE) == "Sun"
 activity$weekday <- factor(isWeekend, labels = c("weekday", "weekend"))
 ```
 
 Time series plot of the 5-minute interval and the average number of steps taken, averaged across all days, by weekdays and weekends:
-```{r timeSeriesByWeekdays, echo=TRUE}
+
+```r
 library(plyr)
 library(ggplot2)
 meanStepsIntervalWeekday <- aggregate(activity$steps, by = list(interval = activity$interval, weekday = activity$weekday), FUN = mean, na.rm = TRUE)
@@ -123,4 +162,6 @@ meanStepsIntervalWeekday <- rename(meanStepsIntervalWeekday, c("x" = "meanSteps"
 g <- ggplot(data = meanStepsIntervalWeekday, aes(x = interval, y = meanSteps)) + geom_line() + facet_grid(. ~ weekday)
 plot(g)
 ```
+
+![](PA1_template_files/figure-html/timeSeriesByWeekdays-1.png)<!-- -->
 
